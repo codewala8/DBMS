@@ -1,0 +1,54 @@
+Write a database trigger on Library table. The System should keep track of the records that 
+are being updated or deleted. The old value of updated or deleted records should be added 
+in Library_Audit table. 
+
+create database lib;
+use lib;
+
+CREATE TABLE Library (
+    book_id INT PRIMARY KEY,
+    title VARCHAR(20),
+    author VARCHAR(25)
+);
+
+CREATE TABLE Library_Audit (
+    audit_id INT AUTO_INCREMENT PRIMARY KEY,
+    book_id INT,
+    title VARCHAR(20),
+    author VARCHAR(25),
+    action_type VARCHAR(10)
+);
+
+DELIMITER //
+CREATE TRIGGER trg_library_audit
+AFTER UPDATE ON Library
+FOR EACH ROW
+BEGIN
+    INSERT INTO Library_Audit (book_id, title, author, action_type)
+    VALUES (OLD.book_id, OLD.title, OLD.author, 'UPDATE');
+END;
+//
+
+DELIMITER //
+CREATE TRIGGER trg_library_delete_audit
+AFTER DELETE ON Library
+FOR EACH ROW
+BEGIN
+    INSERT INTO Library_Audit (book_id, title, author, action_type)
+    VALUES (OLD.book_id, OLD.title, OLD.author, 'DELETE');
+END;
+//
+DELIMITER ;
+
+
+INSERT INTO Library (book_id, title, author) VALUES (1, '1984', 'ABC');
+INSERT INTO Library (book_id, title, author) VALUES (2, 'DBMS', 'PQR');
+
+
+UPDATE Library SET title = 'CNS' WHERE book_id = 1;
+
+DELETE FROM Library WHERE book_id = 2;
+
+
+SELECT * FROM Library_Audit;
+SELECT * FROM Library;
