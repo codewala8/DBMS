@@ -1,0 +1,30 @@
+0Create the Social_media Collection
+db.Social_media.insertMany([
+    { User_Id: 1, User_Name: "Alice", No_of_Posts: 150, No_of_Friends: 50, Friends_List: ["Bob", "Charlie"], Interests: ["Music", "Travel"] },
+    { User_Id: 2, User_Name: "Bob", No_of_Posts: 90, No_of_Friends: 40, Friends_List: ["Alice", "Diana"], Interests: ["Photography", "Reading"] },
+    { User_Id: 3, User_Name: "Charlie", No_of_Posts: 200, No_of_Friends: 70, Friends_List: ["Alice", "Diana"], Interests: ["Sports", "Music"] },
+    // Add 17 more documents...
+    { User_Id: 20, User_Name: "Zara", No_of_Posts: 50, No_of_Friends: 30, Friends_List: ["Xander", "Yara"], Interests: ["Cooking", "Gardening"] }
+])
+
+1 List all users from the collection in a formatted manner.
+db.Social_media.find({}, { _id: 0, User_Id: 1, User_Name: 1, No_of_Posts: 1, No_of_Friends: 1, Friends_List: 1, Interests: 1 }).pretty()
+
+
+2 Find all users having a number of posts greater than 100.
+db.Social_media.find({ No_of_Posts: { $gt: 100 } }, { _id: 0, User_Id: 1, User_Name: 1, No_of_Posts: 1, No_of_Friends: 1, Friends_List: 1, Interests: 1 }).pretty()
+
+3 List the users having a number of posts greater than 100.
+db.Social_media.find({ No_of_Posts: { $gt: 100 } }).pretty()
+
+4 Display the User IDs and Friends List of Users Who Have More Than 5 Friends
+db.Social_media.find(
+    { No_of_Friends: { $gt: 5 } },
+    { _id: 0, User_Id: 1, Friends_List: 1 }
+).pretty()
+
+5 Display All Users with Number of Posts in Descending Order
+db.Social_media.find(
+    {},
+    { _id: 0, User_Id: 1, User_Name: 1, No_of_Posts: 1, No_of_Friends: 1, Friends_List: 1, Interests: 1 }
+).sort({ No_of_Posts: -1 }).pretty()

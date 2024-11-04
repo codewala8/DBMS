@@ -1,0 +1,130 @@
+/*Problem Statement 8(Cursors) 
+Consider the following schema for Products table. 
+Products(Product_id, Product_Name, Product_Type, Price) 
+1.Write a parameterized cursor to display all products in the given price range of price 
+and type ‘Apparel’. 
+Hint: Take the user input for minimum and maximum price for price range. 
+2.Write an explicit cursor to display information of all products with Price grater than 
+5000. 
+3.Write an implicit cursor to display to display the number of records affected by the 
+update operation incrementing Price of all products by 1000.*/
+
+
+create database cursors;
+use cursors;
+drop database cursors;
+
+CREATE TABLE Products (
+    product_id INT PRIMARY KEY,
+    product_name VARCHAR(100),
+    product_type VARCHAR(50),
+    price DECIMAL(10, 2)
+);
+
+INSERT INTO Products (product_id, product_name, product_type, price) VALUES
+(1, 'T-Shirt', 'Apparel', 2500.00),
+(2, 'Jeans', 'Apparel', 4500.00),
+(3, 'Sneakers', 'Footwear', 6000.00),
+(4, 'Jacket', 'Apparel', 7000.00),
+(5, 'Laptop', 'Electronics', 12000.00),
+(6, 'Wool Sweater', 'Apparel', 5500.00),
+(7, 'Smartphone', 'Electronics', 8000.00),
+(8, 'Baseball Cap', 'Apparel', 1500.00),
+(9, 'Backpack', 'Accessories', 3500.00),
+(10, 'Formal Shirt', 'Apparel', 3000.00);
+
+
+
+
+DELIMITER $$
+
+CREATE PROCEDURE GetProductsByPriceRange(IN min_price DECIMAL(10,2), IN max_price DECIMAL(10,2))
+BEGIN
+    DECLARE done INT DEFAULT FALSE;
+    DECLARE p_id INT;
+    DECLARE p_name VARCHAR(100);
+    DECLARE p_type VARCHAR(50);
+    DECLARE p_price DECIMAL(10,2);
+
+    DECLARE product_cursor CURSOR FOR 
+        SELECT product_id, product_name, product_type, price
+        FROM Products
+        WHERE price BETWEEN min_price AND max_price AND product_type = 'Apparel';
+
+    DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = TRUE;
+
+    OPEN product_cursor;
+
+    read_loop: LOOP
+        FETCH product_cursor INTO p_id, p_name, p_type, p_price;
+        IF done THEN
+            LEAVE read_loop;
+        END IF;
+        SELECT p_id, p_name, p_type, p_price;
+    END LOOP;
+
+    CLOSE product_cursor;
+END $$
+
+DELIMITER ;
+
+
+DELIMITER $$
+
+CREATE PROCEDURE GetExpensiveProducts()
+BEGIN
+    DECLARE done INT DEFAULT FALSE;
+    DECLARE p_id INT;
+    DECLARE p_name VARCHAR(100);
+    DECLARE p_type VARCHAR(50);
+    DECLARE p_price DECIMAL(10,2);
+
+    DECLARE expensive_product_cursor CURSOR FOR 
+        SELECT product_id, product_name, product_type, price
+        FROM Products
+        WHERE price > 5000;
+
+    DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = TRUE;
+
+    OPEN expensive_product_cursor;
+
+    read_loop: LOOP
+        FETCH expensive_product_cursor INTO p_id, p_name, p_type, p_price;
+        IF done THEN
+            LEAVE read_loop;
+        END IF;
+        SELECT p_id, p_name, p_type, p_price;
+    END LOOP;
+
+    CLOSE expensive_product_cursor;
+END $$
+
+DELIMITER ;
+
+
+DELIMITER $$
+
+CREATE PROCEDURE UpdateProductPrices()
+BEGIN
+    UPDATE Products
+    SET price = price + 1000;
+
+    -- Get the number of affected rows using LAST_INSERT_ID or ROW_COUNT depending on the DBMS.
+    SELECT ROW_COUNT() AS affected_rows;
+END $$
+
+DELIMITER ;
+
+
+CALL GetProductsByPriceRange(1000, 3000);  
+
+
+
+CALL GetExpensiveProducts();
+
+
+CALL UpdateProductPrices();
+
+
+SET SQL_SAFE_UPDATES = 0;
+

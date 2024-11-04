@@ -1,0 +1,73 @@
+/*Problem Statement 4 (Procedures / Functions) 
+Consider following schema for Bank database. 
+Account(Account_No, Cust_Name, Balance, NoOfYears) 
+Earned_Interest(Account_No, Interst_Amt) 
+1. Write a PL/SQL procedure for following requirement. Take as input Account_No and 
+Interest Rate from User.Calculate the Interest_Amt as simple interest for the given 
+Amount_No and store it in Earned_interest table.Display all the details of 
+Earned_interest Table. 
+2. Write a PLSQL function to display all records from Account table having Balance 
+greater than 50,000. 
+*/
+
+CREATE DATABASE BankD;
+USE BankD;
+
+CREATE TABLE Account (
+    Account_No INT PRIMARY KEY,
+    Cust_Name VARCHAR(100),
+    Balance DECIMAL(10, 2),
+    NoOfYears INT
+);
+
+CREATE TABLE Earned_Interest (
+    Account_No INT,
+    Interest_Amt DECIMAL(10, 2),
+    FOREIGN KEY (Account_No) REFERENCES Account(Account_No)
+);
+
+INSERT INTO Account (Account_No, Cust_Name, Balance, NoOfYears) VALUES
+(101, 'Rahul Sharma', 60000.00, 5),
+(102, 'Anjali Verma', 55000.00, 3),
+(103, 'Kiran Patil', 45000.00, 4),
+(104, 'Rajesh Gupta', 70000.00, 6),
+(105, 'Sneha Joshi', 80000.00, 2);
+
+DELIMITER //
+
+CREATE PROCEDURE Calculate_Interest (
+    p_Account_No INT,
+    p_Interest_Rate DECIMAL(5, 2)
+)
+BEGIN
+    DECLARE v_Balance DECIMAL(10, 2);
+    DECLARE v_Interest_Amt DECIMAL(10, 2);
+
+    SELECT Balance INTO v_Balance FROM Account WHERE Account_No = p_Account_No;
+
+    SET v_Interest_Amt = (v_Balance * p_Interest_Rate * (SELECT NoOfYears FROM Account WHERE Account_No = p_Account_No)) / 100;
+
+    INSERT INTO Earned_Interest (Account_No, Interest_Amt) VALUES (p_Account_No, v_Interest_Amt);
+
+    SELECT 'Account_No: ' AS Account_No, p_Account_No AS Account_No_Value, 'Interest_Amt: ' AS Interest_Amt, v_Interest_Amt AS Interest_Amt_Value;
+
+END;
+//
+
+DELIMITER ;
+
+DELIMITER //
+
+CREATE PROCEDURE Get_Accounts_Above_50000()
+BEGIN
+    SELECT Account_No, Cust_Name, Balance, NoOfYears 
+    FROM Account 
+    WHERE Balance > 50000;
+END;
+//
+
+DELIMITER ;
+
+CALL Calculate_Interest(101, 5);
+
+CALL Get_Accounts_Above_50000();

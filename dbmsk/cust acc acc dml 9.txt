@@ -1,0 +1,100 @@
+/*Create following tables using a given schema and insert appropriate data into the same: 
+Customer (CustID, Name, Cust_Address, Phone_no, Email_ID, Age) 
+Account(Account_no,Branch_Name, Address) 
+Account(Account_no, Branch ID, CustID, date_open, Account_type, Balance) 
+1.Modify the size of column “Email_Address” to 20 in Customer table 
+2.Change the column”Email_Address” to Not Null in Customer table. 
+3.Display the total customers with the balance>50,000Rs. 
+4.Display average balance for account type=”Saving Account”. 
+5.Display the customer details that lives in Pune or name starts with’A’. 
+6.Create a table Saving_Account with(Account_no, Branch ID, CustID, date_open, Balance) 
+using Account Table. 
+7.Display the customer details Age wise with balance>=20,000Rs.*/
+CREATE DATABASE IF NOT EXISTS BankDB;
+USE BankDB;
+drop database BankDB;
+
+-- Create Customer Table
+CREATE TABLE Customer (
+    CustID INT PRIMARY KEY,
+    Name VARCHAR(50),
+    Cust_Address VARCHAR(100),
+    Phone_no VARCHAR(15),
+    Email_ID VARCHAR(50), -- Original size
+    Age INT
+);
+
+-- Insert Sample Data into Customer Table
+INSERT INTO Customer (CustID, Name, Cust_Address, Phone_no, Email_ID, Age) VALUES
+(101, 'Arjun Sharma', 'Pune', '9876543210', 'arjun.sharma@example.com', 28),
+(102, 'Neha Verma', 'Mumbai', '8765432109', 'neha.verma@example.com', 32),
+(103, 'Amit Desai', 'Delhi', '7654321098', 'amit.d@example.com', 25),
+(104, 'Kiran Rao', 'Delhi', '6543210987', 'kiran.rao@example.com', 40),
+(105, 'Anjali Patel', 'Pune', '5432109876', 'anjali@example.com', 36);
+
+-- Create Account Table
+CREATE TABLE Account (
+    Account_no INT PRIMARY KEY,
+    Branch_Name VARCHAR(50),
+    Address VARCHAR(100),
+    CustID INT,
+    date_open DATE,
+    Account_type VARCHAR(20),
+    Balance DECIMAL(15, 2),
+    FOREIGN KEY (CustID) REFERENCES Customer(CustID)
+);
+
+-- Insert Sample Data into Account Table
+INSERT INTO Account (Account_no, Branch_Name, Address, CustID, date_open, Account_type, Balance) VALUES
+(1001, 'Pune Main Branch', 'Pune', 101, '2018-08-16', 'Saving Account', 55000.00),
+(1002, 'Mumbai Central Branch', 'Mumbai', 102, '2018-02-16', 'Loan Account', 40000.00),
+(1003, 'Delhi North Branch', 'Delhi', 103, '2020-09-20', 'Saving Account', 70000.00),
+(1004, 'Delhi North Branch', 'Delhi', 104, '2019-11-25', 'Fixed Deposit', 80000.00),
+(1005, 'Pune Main Branch', 'Pune', 105, '2023-02-05', 'Saving Account', 15000.00);
+
+-- 1. Modify the size of column “Email_ID” to 20 in Customer table
+-- Check lengths of Email_ID
+SELECT CustID, Email_ID, LENGTH(Email_ID) AS Length
+FROM Customer
+WHERE LENGTH(Email_ID) > 20;
+
+-- Update to truncate the Email_IDs
+UPDATE Customer
+SET Email_ID = LEFT(Email_ID, 20)
+WHERE LENGTH(Email_ID) > 20;
+
+SET SQL_SAFE_UPDATES = 0;
+
+-- Modify the column to NOT NULL
+ALTER TABLE Customer MODIFY Email_ID VARCHAR(20) NOT NULL;
+
+-- 3. Display the total customers with the balance > 50,000 Rs
+SELECT COUNT(*) AS Total_Customers
+FROM Account
+WHERE Balance > 50000;
+
+-- 4. Display average balance for account type = 'Saving Account'
+SELECT AVG(Balance) AS Average_Balance
+FROM Account
+WHERE Account_type = 'Saving Account';
+
+-- 5. Display the customer details that live in Pune or name starts with 'A'
+SELECT *
+FROM Customer
+WHERE Cust_Address = 'Pune' OR Name LIKE 'A%';
+
+-- 6. Create a table Saving_Account using Account Table
+CREATE TABLE Saving_Account AS
+SELECT Account_no, CustID, date_open, Balance
+FROM Account
+WHERE Account_type = 'Saving Account';
+
+-- 7. Display the customer details Age wise with balance >= 20,000 Rs
+SELECT C.*
+FROM Customer C
+JOIN Account A ON C.CustID = A.CustID
+WHERE A.Balance >= 20000
+ORDER BY C.Age;
+
+-- Optional: Clean up
+DROP TABLE IF EXISTS Saving_Account;

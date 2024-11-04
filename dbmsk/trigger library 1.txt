@@ -1,0 +1,78 @@
+/*Write a database trigger on Library table. The System should keep track of the records that 
+are being updated or deleted. The old value of updated or deleted records should be added 
+in Library_Audit table.*/
+create database ram;
+use ram;
+
+CREATE TABLE Library (
+    book_id INT PRIMARY KEY,
+    title VARCHAR(255),
+    author VARCHAR(255),
+    publication_year INT,
+    available_copies INT
+);
+
+INSERT INTO Library (book_id, title, author, publication_year, available_copies) VALUES
+(1, 'The Great Gatsby', 'F. Scott Fitzgerald', 1925, 5),
+(2, 'To Kill a Mockingbird', 'Harper Lee', 1960, 3),
+(3, '1984', 'George Orwell', 1949, 8),
+(4, 'Pride and Prejudice', 'Jane Austen', 1813, 2),
+(5, 'Moby Dick', 'Herman Melville', 1851, 4),
+(6, 'War and Peace', 'Leo Tolstoy', 1869, 1),
+(7, 'The Catcher in the Rye', 'J.D. Salinger', 1951, 6),
+(8, 'The Hobbit', 'J.R.R. Tolkien', 1937, 7);
+
+
+CREATE TABLE Library_Audit (
+    audit_id INT AUTO_INCREMENT PRIMARY KEY,
+    book_id INT,
+    title VARCHAR(255),
+    author VARCHAR(255),
+    publication_year INT,
+    available_copies INT,
+    action VARCHAR(10),  -- 'UPDATE' or 'DELETE'
+    action_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+DELIMITER $$
+
+CREATE TRIGGER before_library_update
+BEFORE UPDATE ON Library
+FOR EACH ROW
+BEGIN
+    INSERT INTO Library_Audit (book_id, title, author, publication_year, available_copies, action)
+    VALUES (OLD.book_id, OLD.title, OLD.author, OLD.publication_year, OLD.available_copies, 'UPDATE');
+END $$
+
+DELIMITER ;
+
+
+
+DELIMITER $$
+
+CREATE TRIGGER before_library_delete
+BEFORE DELETE ON Library
+FOR EACH ROW
+BEGIN
+    INSERT INTO Library_Audit (book_id, title, author, publication_year, available_copies, action)
+    VALUES (OLD.book_id, OLD.title, OLD.author, OLD.publication_year, OLD.available_copies, 'DELETE');
+END $$
+
+DELIMITER ;
+
+
+-- Insert some test data
+INSERT INTO Library (book_id, title, author, publication_year, available_copies) VALUES
+(1, 'The Great Gatsby', 'F. Scott Fitzgerald', 1925, 5),
+(2, 'To Kill a Mockingbird', 'Harper Lee', 1960, 3);
+
+-- Update a record
+UPDATE Library SET available_copies = 4 WHERE book_id = 1;
+
+-- Delete a record
+DELETE FROM Library WHERE book_id = 2;
+
+-- Check the audit log
+SELECT * FROM Library_Audit;
+select * from library;
+
+

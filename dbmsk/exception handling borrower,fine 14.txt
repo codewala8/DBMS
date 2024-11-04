@@ -1,0 +1,98 @@
+/*Problem Statement 14 Unnamed PL/SQL code block: Use of Control structure 
+and Exception handling is mandatory. 
+Consider Tables: 
+1. Borrower(Roll_no, Name, DateofIssue, NameofBook, Status) 
+2. Fine(Roll_no,Date,Amt) 
+Accept Roll_no and Name of Book from user. 
+Check the number of days (from date of issue). 
+If days are between 15 to 30 then fine amount will be Rs 5per day. 
+If no. of days>30, per day fine will be Rs 50 per day and for days less than 30, Rs. 5 per 
+day. 
+After submitting the book, status will change from I to R. 
+If condition of fine is true, then details will be stored into fine table.Also handles the 
+exception by named exception handler or user define exception handler. */
+CREATE DATABASE LibraryDB;
+USE LibraryDB;
+drop database LibraryDB;
+
+-- Create the Borrower table
+CREATE TABLE Borrower (
+    Roll_no INT PRIMARY KEY,
+    Name VARCHAR(100),
+    DateofIssue DATE,
+    NameofBook VARCHAR(100),
+    Status CHAR(1) -- 'I' for Issued, 'R' for Returned
+);
+
+-- Create the Fine table
+CREATE TABLE Fine (
+    Roll_no INT,
+    Date DATE,
+    Amt DECIMAL(10, 2),
+    FOREIGN KEY (Roll_no) REFERENCES Borrower(Roll_no)
+);
+
+-- Create the stored procedure for returning a book
+DELIMITER //
+
+CREATE PROCEDURE ReturnBook (
+    IN p_Roll_no INT,
+    IN p_NameofBook VARCHAR(100)
+)
+BEGIN
+    DECLARE v_DateofIssue DATE;
+    DECLARE v_CurrentDate DATE;
+    DECLARE v_DaysDiff INT;
+    DECLARE v_FineAmt DECIMAL(10, 2) DEFAULT 0;
+    DECLARE v_Status CHAR(1);
+    
+    -- Initialize the current date
+    SET v_CurrentDate = CURDATE(); 
+
+    -- Retrieve DateofIssue and Status for the given Roll_no and NameofBook
+    SELECT DateofIssue, Status INTO v_DateofIssue, v_Status
+    FROM Borrower
+    WHERE Roll_no = p_Roll_no AND NameofBook = p_NameofBook;
+
+    -- Calculate the number of days since the book was issued
+    SET v_DaysDiff = DATEDIFF(v_CurrentDate, v_DateofIssue);
+
+    -- Fine calculation logic
+    IF v_Status = 'I' THEN
+        IF v_DaysDiff > 30 THEN
+            SET v_FineAmt = (v_DaysDiff * 50);
+        ELSEIF v_DaysDiff >= 15 THEN
+            SET v_FineAmt = (v_DaysDiff * 5);
+        END IF;
+
+        -- Update the status of the book to returned
+        UPDATE Borrower
+        SET Status = 'R'
+        WHERE Roll_no = p_Roll_no AND NameofBook = p_NameofBook;
+
+        -- Insert fine details if applicable
+        IF v_FineAmt > 0 THEN
+            INSERT INTO Fine (Roll_no, Date, Amt) VALUES (p_Roll_no, v_CurrentDate, v_FineAmt);
+        END IF;
+    ELSE
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'The book has already been returned.';
+    END IF;
+END;
+//
+
+DELIMITER ;
+
+-- Inserting sample data into the Borrower table
+INSERT INTO Borrower (Roll_no, Name, DateofIssue, NameofBook, Status) VALUES
+(101, 'John Doe', '2024-10-01', 'Sample Book', 'I'),
+(102, 'Jane Smith', '2024-09-20', 'Another Book', 'I'),
+(103, 'Alice Johnson', '2024-09-15', 'Third Book', 'I');
+
+-- Call the procedure to return a book and calculate any fines
+CALL ReturnBook(101, 'Sample book');  -- Change this to test with different Roll_no and NameofBook
+
+-- Check the results in the Borrower table
+SELECT * FROM Borrower;
+
+-- Check the results in the Fine table
+SELECT * FROM Fine;

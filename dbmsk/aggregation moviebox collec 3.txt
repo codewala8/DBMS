@@ -1,0 +1,63 @@
+1 Display a list stating how many Movies are directed by each “Director”.
+
+db.Movies_Data.aggregate([
+    {
+        $group: {
+            _id: "$Director",
+            MovieCount: { $sum: 1 }
+        }
+    }
+])
+
+2 Display a list of Movies with the highest BoxOfficeCollection in each Genre.
+db.Movies_Data.aggregate([
+    {
+        $group: {
+            _id: "$Genre",
+            HighestBoxOfficeMovie: { $first: "$$ROOT" },
+            MaxCollection: { $max: "$BoxOfficeCollection" }
+        }
+    },
+    {
+        $match: {
+            $expr: { $eq: ["$HighestBoxOfficeMovie.BoxOfficeCollection", "$MaxCollection"] }
+        }
+    },
+    {
+        $replaceRoot: { newRoot: "$HighestBoxOfficeMovie" }
+    }
+])
+
+3 Display a list of Movies with the highest BoxOfficeCollection in each Genre in ascending order of BoxOfficeCollection.
+db.Movies_Data.aggregate([
+    {
+        $group: {
+            _id: "$Genre",
+            HighestBoxOfficeMovie: { $first: "$$ROOT" },
+            MaxCollection: { $max: "$BoxOfficeCollection" }
+        }
+    },
+    {
+        $match: {
+            $expr: { $eq: ["$HighestBoxOfficeMovie.BoxOfficeCollection", "$MaxCollection"] }
+        }
+    },
+    {
+        $replaceRoot: { newRoot: "$HighestBoxOfficeMovie" }
+    },
+    {
+        $sort: { BoxOfficeCollection: 1 }
+    }
+])
+
+4 Create an index on field Movie_ID.
+db.Movies_Data.createIndex({ Movie_ID: 1 })
+
+5 Create an index on fields “Movie_Name” and “Director”. 
+db.Movies_Data.createIndex({ Movie_Name: 1, Director: 1 })
+
+6 Drop an index on field Movie_ID.
+db.Movies_Data.dropIndex("Movie_ID_1")
+
+7 Drop an index on fields “Movie_Name” and “Director”
+db.Movies_Data.dropIndex("Movie_Name_1_Director_1")

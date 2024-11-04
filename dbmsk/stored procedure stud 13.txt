@@ -1,0 +1,87 @@
+/*Problem Statement 13 PL/SQL Stored Procedure and Stored Function. 
+Write a Stored Procedure namely proc_Grade for the categorization of student. If marks 
+scoredby 
+students in examination is <=1500 and marks>=990 then student will be placed in distinction 
+category if marks scored are between 989 and 900 category is first class, if marks 899 and 
+825 
+category is Higher Second Class. 
+Write a PL/SQL block to use procedure created with above requirement. 
+Stud_Marks(name, total_marks) Result(Roll,Name, Class)*/
+
+CREATE DATABASE StudentDB;
+USE StudentDB;
+
+CREATE TABLE Stud_Marks (
+    name VARCHAR(100),
+    total_marks INT
+);
+
+CREATE TABLE Result (
+    Roll INT AUTO_INCREMENT PRIMARY KEY,
+    Name VARCHAR(100),
+    Class VARCHAR(50)
+);
+
+DELIMITER //
+
+CREATE PROCEDURE proc_Grade()
+BEGIN
+    DECLARE done INT DEFAULT FALSE;
+    DECLARE v_name VARCHAR(100);
+    DECLARE v_marks INT;
+    DECLARE v_class VARCHAR(50);
+
+    -- Cursor to iterate through each student
+    DECLARE student_cursor CURSOR FOR 
+        SELECT name, total_marks FROM Stud_Marks;
+
+    -- Handler for when there are no more rows to process
+    DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = TRUE;
+
+    -- Open the cursor
+    OPEN student_cursor;
+
+    read_loop: LOOP
+        -- Fetch student data
+        FETCH student_cursor INTO v_name, v_marks;
+
+        IF done THEN
+            LEAVE read_loop;
+        END IF;
+
+        -- Determine class based on total_marks
+        IF v_marks <= 1500 AND v_marks >= 990 THEN
+            SET v_class = 'Distinction';
+        ELSEIF v_marks <= 989 AND v_marks >= 900 THEN
+            SET v_class = 'First Class';
+        ELSEIF v_marks <= 899 AND v_marks >= 825 THEN
+            SET v_class = 'Higher Second Class';
+        ELSE
+            SET v_class = 'No Category';  -- For marks below 825 or above 1500
+        END IF;
+
+        -- Insert the result into Result table
+        INSERT INTO Result (Name, Class) VALUES (v_name, v_class);
+    END LOOP;
+
+    -- Close the cursor
+    CLOSE student_cursor;
+END;
+//
+
+DELIMITER ;
+
+
+-- Inserting sample data into Stud_Marks
+INSERT INTO Stud_Marks (name, total_marks) VALUES
+('Alice', 1200),
+('Bob', 950),
+('Charlie', 870),
+('David', 1500),
+('Eve', 800);
+
+-- Call the procedure to categorize students
+CALL proc_Grade();
+
+-- Display the results
+SELECT * FROM Result;

@@ -1,0 +1,8 @@
+terminal 
+mongoimport "C:\Users\kunal\pranav.json" -d om -c beta --jsonArray --drop
+
+
+mongosh
+use om
+db.createCollection("beta")
+db.beta.find()

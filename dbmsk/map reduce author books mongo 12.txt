@@ -1,0 +1,93 @@
+0 Create the Book Collection
+db.Book.insertMany([
+    { Title: "Book A", Author_name: "Author 1", Borrowed_status: true, Price: 350 },
+    { Title: "Book B", Author_name: "Author 1", Borrowed_status: false, Price: 250 },
+    { Title: "Book C", Author_name: "Author 2", Borrowed_status: true, Price: 400 },
+    { Title: "Book D", Author_name: "Author 2", Borrowed_status: true, Price: 150 },
+    { Title: "Book E", Author_name: "Author 3", Borrowed_status: false, Price: 500 },
+    { Title: "Book F", Author_name: "Author 3", Borrowed_status: true, Price: 600 }
+    // Add more sample documents as needed...
+])
+
+1 MapReduce Functions
+var mapFunction1 = function() {
+    emit(this.Author_name, this.Title);
+};
+
+Reduce Function
+var reduceFunction1 = function(key, values) {
+    return values;  // Simply return the list of titles
+};
+
+MapReduce Execution
+db.Book.mapReduce(
+    mapFunction1,
+    reduceFunction1,
+    { out: "Author_Books" }
+);
+
+
+
+2  Display Author-wise List of Books Having Borrowed Status as "True
+
+Map Function 
+var mapFunction2 = function() {
+    if (this.Borrowed_status === true) {
+        emit(this.Author_name, this.Title);
+    }
+};
+
+Reduce Function
+var reduceFunction2 = function(key, values) {
+    return values;  // Return the list of titles
+};
+
+MapReduce Execution:
+
+db.Book.mapReduce(
+    mapFunction2,
+    reduceFunction2,
+    { out: "Author_Borrowed_Books" }
+);
+
+
+3 Display Author-wise List of Books Having Price Greater than 300
+
+Map Function 
+var mapFunction3 = function() {
+    if (this.Price > 300) {
+        emit(this.Author_name, this.Title);
+    }
+};
+
+Reduce Function 
+var reduceFunction3 = function(key, values) {
+    return values;  // Return the list of titles
+};
+
+MapReduce Function
+db.Book.mapReduce(
+    mapFunction3,
+    reduceFunction3,
+    { out: "Author_Priced_Books" }
+);
+
+
+
+to see the output youy do the following
+
+
+db.Author_Books.find().pretty();
+db.Author_Borrowed_Books.find().pretty();
+db.Author_Priced_Books.find().pretty();
+
+
+
+
+
+
+
+
+
+
+
