@@ -11,86 +11,90 @@ Account(Account_no, Branch ID, CustID, date_open, Account_type, Balance)
 using Account Table. 
 7.Display the customer details Age wise with balance>=20,000Rs. 
 
--- Step 1: Create the Customer table
-CREATE TABLE Customer (
+create database hlw;
+use hlw;
+Create table Customer  (
     CustID INT PRIMARY KEY,
     Name VARCHAR(50),
     Cust_Address VARCHAR(100),
     Phone_no VARCHAR(15),
-    Email_ID VARCHAR(30),
+    Email_ID VARCHAR(50),
     Age INT
 );
 
--- Step 2: Create the Account table
+-- Create the Account table
 CREATE TABLE Account (
     Account_no INT PRIMARY KEY,
     Branch_Name VARCHAR(50),
     Address VARCHAR(100)
 );
 
--- Step 3: Create the AccountDetails table
+-- Create the AccountDetails table
 CREATE TABLE AccountDetails (
     Account_no INT,
     Branch_ID INT,
     CustID INT,
     date_open DATE,
     Account_type VARCHAR(20),
-    Balance DECIMAL(10, 2),
-    PRIMARY KEY (Account_no, Branch_ID),
+    Balance DECIMAL(15, 2),
+    PRIMARY KEY (Account_no, Branch_ID, CustID),
     FOREIGN KEY (CustID) REFERENCES Customer(CustID)
 );
 
--- Step 4: Insert sample data into Customer table
+-- Insert data into Customer table
 INSERT INTO Customer (CustID, Name, Cust_Address, Phone_no, Email_ID, Age) VALUES
-(1, 'John Doe', '123 Elm St, Pune', '9876543210', 'john.doe@example.com', 30),
-(2, 'Alice Smith', '456 Oak St, Mumbai', '8765432109', 'alice.smith@example.com', 25),
-(3, 'Bob Johnson', '789 Pine St, Pune', '7654321098', 'bob.j@example.com', 40),
-(4, 'Anita Kumar', '101 Maple St, Delhi', '6543210987', 'anita.k@example.com', 35),
-(5, 'David Brown', '202 Cedar St, Pune', '5432109876', 'david.b@example.com', 22);
+(1, 'John Doe', '123 Main St, Pune', '9876543210', 'john@example.com', 30),
+(2, 'Alice Smith', '456 Elm St, Mumbai', '9123456789', 'alice@example.com', 25),
+(3, 'Bob Johnson', '789 Oak St, Delhi', '9234567890', 'bob@example.com', 40),
+(4, 'Emma Davis', '321 Pine St, Pune', '9345678901', 'emma@example.com', 22),
+(5, 'Alan Brown', '654 Maple St, Chennai', '9456789012', 'alan@example.com', 35);
 
--- Step 5: Insert sample data into Account table
+-- Insert data into Account table
 INSERT INTO Account (Account_no, Branch_Name, Address) VALUES
-(1001, 'Pune Branch', '456 Oak St, Pune'),
-(1002, 'Mumbai Branch', '789 Pine St, Mumbai');
+(1001, 'Pune Branch', 'Pune'),
+(1002, 'Mumbai Branch', 'Mumbai'),
+(1003, 'Delhi Branch', 'Delhi');
 
--- Step 6: Insert sample data into AccountDetails table
+-- Insert data into AccountDetails table
 INSERT INTO AccountDetails (Account_no, Branch_ID, CustID, date_open, Account_type, Balance) VALUES
 (1001, 1, 1, '2023-01-15', 'Saving Account', 60000.00),
 (1001, 1, 3, '2023-02-20', 'Checking Account', 30000.00),
 (1002, 2, 2, '2023-03-10', 'Saving Account', 45000.00),
-(1002, 2, 4, '2023-04-05', 'Saving Account', 15000.00),
+(1003, 2, 4, '2023-04-05', 'Saving Account', 15000.00),
 (1001, 1, 5, '2023-05-12', 'Saving Account', 25000.00);
 
--- Step 7: Modify the size of the column “Email_ID” to 20 in Customer table
-ALTER TABLE Customer MODIFY Email_ID VARCHAR(20);
+-- 1. Modify the size of column "Email_ID" to 20 in Customer table
+ALTER TABLE Customer
+MODIFY Email_ID VARCHAR(20);
 
--- Step 8: Change the column “Email_ID” to Not Null in Customer table
-ALTER TABLE Customer MODIFY Email_ID VARCHAR(20) NOT NULL;
+-- 2. Change the column "Email_ID" to Not Null in Customer table
+ALTER TABLE Customer
+MODIFY Email_ID VARCHAR(20) NOT NULL;
 
--- Step 9: Display the total customers with the balance > 50,000 Rs
-SELECT COUNT(DISTINCT CustID) AS Total_Customers
+-- 3. Display the total customers with the balance > 50,000 Rs.
+SELECT COUNT(DISTINCT CustID) AS Total_Customers_Above_50000
 FROM AccountDetails
 WHERE Balance > 50000;
 
--- Step 10: Display average balance for account type = “Saving Account”
-SELECT AVG(Balance) AS Average_Balance
+-- 4. Display average balance for account type = "Saving Account"
+SELECT AVG(Balance) AS Average_Balance_Saving_Account
 FROM AccountDetails
 WHERE Account_type = 'Saving Account';
 
--- Step 11: Display the customer details that live in Pune or name starts with ‘A’
+-- 5. Display the customer details that live in Pune or name starts with 'A'
 SELECT *
 FROM Customer
 WHERE Cust_Address LIKE '%Pune%' OR Name LIKE 'A%';
 
--- Step 12: Create a table Saving_Account using AccountDetails Table
+-- 6. Create a table Saving_Account using AccountDetails table
 CREATE TABLE Saving_Account AS
 SELECT Account_no, Branch_ID, CustID, date_open, Balance
 FROM AccountDetails
 WHERE Account_type = 'Saving Account';
 
--- Step 13: Display the customer details Age wise with balance >= 20,000 Rs
-SELECT C.*
-FROM Customer C
-JOIN AccountDetails A ON C.CustID = A.CustID
-WHERE A.Balance >= 20000
-ORDER BY C.Age;
+-- 7. Display the customer details Age wise with balance >= 20,000 Rs.
+SELECT c.*
+FROM Customer c
+JOIN AccountDetails a ON c.CustID = a.CustID
+WHERE a.Balance >= 20000
+ORDER BY c.Age;
